@@ -4,16 +4,11 @@ import Axios from "axios";
 import Message from "./Message";
 
 function Data({ location, match }) {
-  //  const latitude=location.lat;
-  // const longitude;
   const id = match.params.id;
-  // console.log(location.lat.split("="));
 
-  // const [cLat, setLatitude] = useState(latitude);
-  // const [cLng, setLongitude] = useState(longitude);
+  const [cLat, setLatitude] = useState();
+  const [cLng, setLongitude] = useState();
   const [outRange, setoutRange] = useState(false);
-
-  let i = 0;
 
   // check data function
 
@@ -30,7 +25,6 @@ function Data({ location, match }) {
         parseFloat(maxLang) ||
       parseFloat(info.info.static_Gps_Location.longitude) < parseFloat(minLang)
     ) {
-      setoutRange(true);
       return true;
     }
 
@@ -42,46 +36,47 @@ function Data({ location, match }) {
   function getRandomlLatitude(min, max) {
     // min = Math.ceil(min);
     // max = Math.floor(max);
-    i++;
 
-    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
   function getRandomLongitude(min, max) {
     // min = Math.ceil(min);
     // max = Math.floor(max);
 
-    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   setInterval(async function () {
-    //  console.log(i);
-    // console.log(cLat);
-    // console.log(cLng);
-    // setLatitude(getRandomlLatitude(parseFloat(cLat), 78.665));
-    // setLongitude(getRandomLongitude(cLng, 67.55));
-    // const { data } = await Axios.put(`/device/${id}/LatLngedit`, {
-    //   latitude: cLat,
-    //   longitude: cLng,
-    // });
-    // checkData(data);
-    // console.log(data);
+    setLatitude(getRandomlLatitude(28.45, 78.665));
+    setLongitude(getRandomLongitude(23, 67.55));
+
+    const { data } = await Axios.put(`/device/${id}/LatLngedit`, {
+      latitude: cLat,
+      longitude: cLng,
+    });
+    if (!checkData(data)) {
+      setoutRange(true);
+      clearInterval();
+    }
+    setoutRange(true);
+    console.log(outRange);
+    if (outRange) {
+      clearInterval();
+    }
   }, 10000);
-  // SendData();
-  // console.log(outRange);
 
   useEffect(() => {
     let lat = new URLSearchParams(location.search).get("lat");
     let lng = new URLSearchParams(location.search).get("lng");
 
     console.log("lt", lat, "lng", lng);
-    console.log(parseFloat(lat));
-    console.log(parseFloat(lng));
-  }, []);
+    setLatitude(parseFloat(lat));
+    setLongitude(parseFloat(lng));
+  }, [location.search]);
 
   return (
     <div>
-      {/*
-       <Message var="danger" message="Device out of range" />*/}
+      {outRange && <Message var="danger" message="Device out of range" />}
 
       <Table striped bordered hover responsive className="table-sm">
         <thead>
@@ -92,10 +87,10 @@ function Data({ location, match }) {
           </tr>
         </thead>
         <tbody>
-          <tr key={id}>
+          <tr>
             <td>{id}</td>
-            {/* <td>{cLat}</td> */}
-            {/* <td>{cLng}</td> */}
+            <td>{cLat}</td>
+            <td>{cLng}</td>
           </tr>
         </tbody>
       </Table>

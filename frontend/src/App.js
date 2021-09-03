@@ -21,8 +21,26 @@ const Login = React.lazy(() => import("./views/pages/login/Login"));
 const Register = React.lazy(() => import("./views/pages/register/Register"));
 const Page404 = React.lazy(() => import("./views/pages/page404/Page404"));
 const Page500 = React.lazy(() => import("./views/pages/page500/Page500"));
+var mqtt = require("mqtt");
 
 class App extends Component {
+  componentDidMount() {
+    var client = mqtt.connect("mqtt://test.mosquitto.org");
+
+    client.on("connect", function () {
+      client.subscribe("presence", function (err) {
+        if (!err) {
+          client.publish("presence", "Hello mqtt");
+        }
+      });
+    });
+
+    client.on("message", function (topic, message) {
+      // message is Buffer
+      console.log(message.toString());
+      client.end();
+    });
+  }
   render() {
     return (
       <HashRouter>

@@ -355,7 +355,7 @@ app.put("/device/:id/LatLngedit", async (req, res) => {
     } else {
       console.log("device not found");
     }
-    const info = await device.save();
+    const info = await device?.save();
     const r = await data.save();
 
     // check whether valuers are ın the range accordıng to rule set

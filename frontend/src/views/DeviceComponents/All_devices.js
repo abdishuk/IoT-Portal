@@ -67,7 +67,7 @@ function Alldevices({ history }) {
                     {" "}
                     {console.log("here", device.static_Gps_Location.latitude)}
                     <Link
-                      to={`/devices/${device._id}/data/?lat=${device.static_Gps_Location.latitude}&lng=${device.static_Gps_Location.latitude}`}
+                      to={`/devices/${device._id}/data/?lat=${device.static_Gps_Location.latitude}&lng=${device.static_Gps_Location.longitude}`}
                     >
                       Get Telemetry
                     </Link>
