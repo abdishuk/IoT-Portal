@@ -3,7 +3,8 @@ import Axios from "axios";
 import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { LinkContainer } from "react-router-bootstrap";
-import { Button } from "bootstrap";
+import { Button } from "react-bootstrap";
+let mqtt = require("mqtt");
 
 function Alldevices({ history }) {
   const [devices, setDevices] = useState([]);
@@ -14,6 +15,17 @@ function Alldevices({ history }) {
     const { data } = await Axios.get("/devices/all_devices");
     setDevices(data);
   };
+  useEffect(() => {
+    let client = mqtt.connect("ws://18.140.241.253:15675/ws");
+    client.on("connect", () => {
+      console.log("connected");
+      client.subscribe("telemetry");
+    });
+    client.on("message", (topic, message) => {
+      console.log(message);
+      //this.handleJsonMessage(JSON.parse(message.toString()));
+    });
+  }, []);
 
   const updateDeviceList = (id) => {
     setDevices(devices.filter((device) => device._id !== id));
@@ -28,8 +40,18 @@ function Alldevices({ history }) {
   useEffect(() => {
     getDevices();
   }, []);
-  const RuleHandler = (id) => {
-    history.push(`/devices/${id}/rule`);
+  const EditHandler = (id) => {
+    history.push(`/devices/${id}/rule/edit`);
+  };
+  const RuleHandler = async (id) => {
+    const { data } = await Axios.get(`/device/${id}/rule`);
+    if (data) {
+      alert(
+        "rule already exists for this device.Please use the edit button to edit the existing one"
+      );
+    } else {
+      history.push(`/devices/${id}/rule`);
+    }
   };
 
   console.log(Lat);
@@ -48,7 +70,8 @@ function Alldevices({ history }) {
               <th>Category</th>
               <th>Gateway Name</th>
               <th>Model</th>
-              <th>Telemetry</th>Edit<th>Rule</th>
+              <th>Telemetry</th>Edit<th> Add Rule</th>
+              <th>Edit Rule</th>
               <th>Delete</th>
             </tr>
           </thead>
@@ -82,6 +105,15 @@ function Alldevices({ history }) {
                     <button
                       onClick={() => {
                         RuleHandler(device._id);
+                      }}
+                    >
+                      Add Rule
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => {
+                        EditHandler(device._id);
                       }}
                     >
                       Add Rule

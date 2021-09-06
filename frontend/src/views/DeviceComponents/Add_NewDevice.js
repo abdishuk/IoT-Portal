@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import Message from "./Message";
 
 function Add_NewDevice() {
+  const [submitted, setSubmitted] = useState(false);
+
   const [formData, setFormdata] = useState({
     Name: "",
     Type: "",
@@ -51,7 +53,7 @@ function Add_NewDevice() {
       const { data } = await axios.post("/device/add_device", Device, config);
       console.log(data);
 
-      alert("device added successfully");
+      setSubmitted(true);
     }
   };
 
@@ -90,137 +92,140 @@ function Add_NewDevice() {
   const ChangeCheckStatus = () => setChecked(!checked);
   return (
     <>
-      <div class="top">
+      <FormContainer>
         <h1>Add New Device</h1>
-      </div>
-      <Form onSubmit={onsubmitHandler}>
-        <Form.Group controlId="Device Name">
-          <Form.Label>Device Name</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter Device Name"
-            name="Name"
-            value={Name}
-            onChange={onChange}
-            isInvalid={!!errors.Name}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.Name}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="Category">
-          <Form.Label>Category</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter Category"
-            name="category"
-            value={category}
-            onChange={onChange}
-            isInvalid={!!errors.category}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.category}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="Type">
-          <Form.Label>Type</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter Type"
-            name="Type"
-            value={Type}
-            onChange={onChange}
-            isInvalid={!!errors.Type}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.Type}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="Connected Asset Name">
-          <Form.Label>Connected Asset Name</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter Connected Asset Name "
-            name="asset"
-            value={asset}
-            isInvalid={!!errors.asset}
-            onChange={onChange}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.latitude}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        {!checked && (
-          <Form.Group controlId=" Gateway Name">
-            <Form.Label>Gateway Name</Form.Label>
+        <Form onSubmit={onsubmitHandler}>
+          <Form.Group controlId="Device Name">
+            <Form.Label>Device Name</Form.Label>
             <Form.Control
               type="text"
-              placeholder="Enter Gateway Name"
-              name="gateway"
-              value={gateway}
+              placeholder="Enter Device Name"
+              name="Name"
+              value={Name}
+              onChange={onChange}
+              isInvalid={!!errors.Name}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.Name}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="Category">
+            <Form.Label>Category</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Category"
+              name="category"
+              value={category}
+              onChange={onChange}
+              isInvalid={!!errors.category}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.category}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="Type">
+            <Form.Label>Type</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Type"
+              name="Type"
+              value={Type}
+              onChange={onChange}
+              isInvalid={!!errors.Type}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.Type}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="Connected Asset Name">
+            <Form.Label>Connected Asset Name</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Connected Asset Name "
+              name="asset"
+              value={asset}
+              isInvalid={!!errors.asset}
               onChange={onChange}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.latitude}
+            </Form.Control.Feedback>
           </Form.Group>
+
+          {!checked && (
+            <Form.Group controlId=" Gateway Name">
+              <Form.Label>Gateway Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter Gateway Name"
+                name="gateway"
+                value={gateway}
+                onChange={onChange}
+              />
+            </Form.Group>
+          )}
+
+          <Form.Group controlId="Enter Device's Latitude">
+            <Form.Label>Latitude</Form.Label>
+            <Form.Control
+              type="Number"
+              placeholder="Enter Device's Latitude"
+              name="latitude"
+              value={latitude}
+              isInvalid={!!errors.latitude}
+              onChange={onChange}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.latitude}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Form.Group controlId="Enter Device's Longitude">
+            <Form.Label>Longitude</Form.Label>
+            <Form.Control
+              type="Number"
+              placeholder="Enter Device's Longitude"
+              name="longitude"
+              value={longitude}
+              onChange={onChange}
+              isInvalid={!!errors.longitude}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.longitude}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="Model">
+            <Form.Label>Model</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Enter Model Name"
+              name="model"
+              value={model}
+              isInvalid={!!errors.model}
+              onChange={onChange}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.mode}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="formBasicCheckbox">
+            <Form.Check
+              type="checkbox"
+              label="Is gateway"
+              onClick={ChangeCheckStatus}
+              checked={checked}
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit">
+            Add{" "}
+          </Button>
+        </Form>
+        {submitted && (
+          <Message var="success" message="Device added successfully" />
         )}
-
-        <Form.Group controlId="Enter Device's Latitude">
-          <Form.Label>Latitude</Form.Label>
-          <Form.Control
-            type="Number"
-            placeholder="Enter Device's Latitude"
-            name="latitude"
-            value={latitude}
-            isInvalid={!!errors.latitude}
-            onChange={onChange}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.latitude}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group controlId="Enter Device's Longitude">
-          <Form.Label>Longitude</Form.Label>
-          <Form.Control
-            type="Number"
-            placeholder="Enter Device's Longitude"
-            name="longitude"
-            value={longitude}
-            onChange={onChange}
-            isInvalid={!!errors.longitude}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.longitude}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group controlId="Model">
-          <Form.Label>Model</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Enter Model Name"
-            name="model"
-            value={model}
-            isInvalid={!!errors.model}
-            onChange={onChange}
-          />
-          <Form.Control.Feedback type="invalid">
-            {errors.mode}
-          </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group className="mb-3" controlId="formBasicCheckbox">
-          <Form.Check
-            type="checkbox"
-            label="Is gateway"
-            onClick={ChangeCheckStatus}
-            checked={checked}
-          />
-        </Form.Group>
-        <Button variant="primary" type="submit">
-          Add{" "}
-        </Button>
-      </Form>
+      </FormContainer>
     </>
   );
 }

@@ -48,6 +48,7 @@ const RuleSchema = mongoose.Schema(
     },
     action: {
       type: String,
+      required: true,
     },
   },
   {

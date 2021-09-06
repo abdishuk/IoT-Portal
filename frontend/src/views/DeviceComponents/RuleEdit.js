@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import axios from "axios";
+import { Button } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Form } from "react-bootstrap";
 import FormContainer from "./FormContainer";
-import Axios from "axios";
 import Message from "./Message";
 
-function Rule({ match }) {
-  const id = match.params.id;
-  console.log(id);
-  const [submitted, setSubmitted] = useState(false);
+function RuleEdit({ match }) {
+  const [device, setDevice] = useState({});
+  const [id, setID] = useState("");
+
   const [formData, setFormdata] = useState({
     MinLat: "",
     MinLng: "",
@@ -15,35 +16,60 @@ function Rule({ match }) {
     MaxLng: "",
     Action: "",
   });
+  const [submitted, setSubmitted] = useState(false);
+
   const onChange = (e) => {
     setFormdata({ ...formData, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    // /device/:id/rule
+    const fetchData = async () => {
+      const device_id = match.params.id;
+      console.log(device_id);
+      const { data } = await axios.get(`/device/${device_id}/rule`);
+      console.log(data);
+      //console.log("fetchedData", data);
+      setID(device_id);
+      setFormdata({
+        MinLat: data.minLat,
+        MinLng: data.minLang,
+        MaxLat: data.maxLat,
+        MaxLng: data.maxLang,
+        Action: data.Action,
+      });
+    };
+
+    fetchData();
+  }, [match.params.id]);
 
   const { MinLat, MinLng, MaxLat, MaxLng, Action } = formData;
 
   const onsubmitHandler = async (e) => {
     e.preventDefault();
-
     const config = {
       headers: {
         "Content-Type": "application/json",
       },
     };
-    const { data } = await Axios.post(
+
+    const { data } = await axios.put(
       `/device/rule/${id}`,
       { MinLat, MinLng, MaxLat, MaxLng, Action },
       config
     );
-    console.log(data);
     if (data) {
       setSubmitted(true);
     }
   };
 
   return (
-    <>
-      {submitted && <Message var="success" message="Rule added successfully" />}
-      <div>
+    <div>
+      <>
+        {submitted && (
+          <Message var="success" message="Device edited successfully" />
+        )}
+
         <FormContainer>
           <h1>Add New Rule</h1>
           <Form onSubmit={onsubmitHandler}>
@@ -100,12 +126,12 @@ function Rule({ match }) {
                 onChange={onChange}
               />
             </Form.Group>
-            <Button type="submit">Add </Button>
+            <Button type="submit">Edit </Button>
           </Form>
         </FormContainer>
-      </div>
-    </>
+      </>
+    </div>
   );
 }
 
-export default Rule;
+export default RuleEdit;

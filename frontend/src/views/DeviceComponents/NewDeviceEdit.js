@@ -3,10 +3,12 @@ import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import FormContainer from "./FormContainer";
+import Message from "./Message";
 
 function NewDeviceEdit({ match }) {
   const [device, setDevice] = useState({});
   const [id, setID] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   // console.log(device);
   const [formData, setFormdata] = useState({
@@ -62,8 +64,7 @@ function NewDeviceEdit({ match }) {
       },
     };
     const { data } = await axios.put(`/device/${id}/edit`, Device, config);
-
-    alert("device updated successfully");
+    setSubmitted(true);
   };
   const { Name, Type, asset, category, gateway, model, latitude, longitude } =
     formData;
@@ -79,6 +80,7 @@ function NewDeviceEdit({ match }) {
       <FormContainer>
         <h1>Add New Device</h1>
         <br />
+
         <Form onSubmit={onsubmitHandler}>
           <Form.Group controlId="Device Name">
             <Form.Label> Name</Form.Label>
@@ -180,6 +182,9 @@ function NewDeviceEdit({ match }) {
           </Button>
         </Form>
       </FormContainer>
+      {submitted && (
+        <Message var="success" message="Device edited successfully" />
+      )}
     </>
   );
 }

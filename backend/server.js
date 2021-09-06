@@ -3,9 +3,11 @@ import Pusher from "pusher";
 import dotenv from "dotenv"; // for creating .env file in the root to store environment variables
 import connectDB from "./config/db.js";
 import asynchandler from "express-async-handler";
-
+import http from "http";
+import webSocketServer from "websocket";
 import Axios from "axios";
 const app = express();
+const server = http.createServer(app);
 
 import bodyParser from "body-parser";
 import axios from "axios";
@@ -26,77 +28,43 @@ app.use(express.json()); // to post json data
 
 const PORT = 5000;
 
-const pusher = new Pusher({
-  appId: "1258337",
-  key: "938b0f8615346546359f",
-  secret: "c65be5216157dabcdf16",
-  cluster: "eu",
-  useTLS: true,
-});
+// });
 
 // put data
-app.put("/data", async (req, res) => {
-  console.log("put req");
-  // const { location } = req.body;
-  try {
-    const message = await Message.findById("612da3afabb33331d040f481");
 
-    // const device = await Data.findById("612cb2d1f0a8562f1872ca98");
-    // if (device) {
-    //   device.location.latitude = location.latitude || device.location.latitude;
-    //   device.location.longitude =
-    //     location.longitude || device.location.longitude;
-
-    //   //   console.log(device);
-    // }
-
-    // await device.save().then((data) => {
-    //   pusher.trigger("new-info", "new-post", {
-    //     data,
-    //   });
-    // });
-    const { Name } = req.body;
-    if (message) {
-      message.Name = Name;
-    } else {
-      console.log("not found");
-    }
-    const { data } = await message.save();
-    if (data) {
-      pusher.trigger("new-info", "new-post", {
-        data,
-      });
-    }
-    console.log("successfully put");
-  } catch (error) {
-    console.log("error ");
-    // }
-  }
-});
-
-// post data
-
-app.post("/data", async (req, res) => {
-  console.log("route hit");
-  // const { location, device } = req.body;
+app.put("/data/:id", async (req, res) => {
+  const id = req.params.id;
+  const { latitude, longitude } = req.body;
   // const ExistDevice = await Data.findOne({ device });
 
+  const data = await Data.findOne({ device: id });
+
   try {
-    const { device_id, latitude, longitude } = req.body;
-    const info = new Message({
-      device_id,
-      latitude,
-      longitude,
-    });
-    // await data.save();
+    if (data) {
+      data.location.latitude = latitude || data.location.latitude;
+      data.location.longitude = longitude || data.location.longitude;
 
-    const { data } = await info.save();
+      const savedData = await data.save();
 
-    res.send(data);
+      res.send(savedData);
+    }
 
     //  console.log("info", info);
   } catch (error) {
-    //  console.log("eror");
+    console.log(error);
+  }
+});
+
+// find data by device id
+
+app.get("/data/:id", async (req, res) => {
+  const id = req.params.id;
+  const data = await Data.findOne({ device: id });
+  if (data) {
+    res.send({
+      latitude: data.location.latitude,
+      longitude: data.location.longitude,
+    });
   }
 });
 
@@ -177,7 +145,7 @@ app.post("/device/add_device", async (req, res) => {
 
 app.post("/device/rule/:id", async (req, res) => {
   const device = await Device.findById(req.params.id);
-  const { MinLat, MinLng, MaxLat, MaxLng } = req.body;
+  const { MinLat, MinLng, MaxLat, MaxLng, Action } = req.body;
   if (device) {
     const pr1 = {
       type: "latitude",
@@ -198,21 +166,32 @@ app.post("/device/rule/:id", async (req, res) => {
       value: MaxLng,
     };
 
-    const rule = new Rule({
-      device: req.params.id,
-      minRange: {
-        param1: pr1,
+    // check if rule for the device already exists
 
-        param2: pr2,
-      },
-      maxRange: {
-        param1: p1,
-        param2: p2,
-      },
-    });
-    const saveRule = await rule.save();
-    console.log("Rule save");
-    console.log(saveRule);
+    const exists = await Rule.findOne({ device: req.params.id });
+
+    if (!exists) {
+      const rule = new Rule({
+        device: req.params.id,
+        minRange: {
+          param1: pr1,
+
+          param2: pr2,
+        },
+        maxRange: {
+          param1: p1,
+          param2: p2,
+        },
+        action: Action,
+      });
+      const saveRule = await rule.save();
+      console.log("Rule save");
+      console.log(saveRule);
+    } else {
+      console.log(
+        "rule already exists for device.Please Edit it if you wish to."
+      );
+    }
   } else {
     console.log("device not found");
   }
@@ -222,7 +201,7 @@ app.post("/device/rule/:id", async (req, res) => {
 
 app.get("/device/:id/rule", async (req, res) => {
   const id = req.params.id;
-  let minLat, maxLat, minLang, maxLang;
+  let minLat, maxLat, minLang, maxLang, Action;
   try {
     const rule = await Rule.findOne({ device: id });
     if (rule) {
@@ -231,6 +210,7 @@ app.get("/device/:id/rule", async (req, res) => {
 
       maxLat = rule.maxRange.param1.value;
       maxLang = rule.maxRange.param2.value;
+      Action = rule.Action;
 
       res.send({
         minLat,
@@ -415,4 +395,44 @@ app.delete(
   })
 );
 
-app.listen(5000, console.log("server listening on port " + PORT));
+server.listen(5000, console.log("server listening on port " + PORT));
+const wsServer = new webSocketServer.server({
+  httpServer: server,
+});
+const clients = {};
+
+// This code generates unique userid for everyuser.
+const getUniqueID = () => {
+  const s4 = () =>
+    Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  return s4() + s4() + "-" + s4();
+};
+
+// wsServer.on("request", function (request) {
+//   var userId = getUniqueID();
+//   console.log(
+//     new Date() +
+//       " Recieved a new connection from origin " +
+//       request.origin +
+//       "."
+//   );
+//   const connection = request.accept(null, request.origin);
+//   // clients[userID] = connection;
+//   console.log(
+//     "connected: " + userID + " in " + Object.getOwnPropertyNames(clients)
+//   );
+
+//   connection.on("message", function (message) {
+//     if (message.type === "utf8") {
+//       console.log("Received Message: ", message.utf8Data);
+
+//       // broadcasting message to all connected clients
+//       for (key in clients) {
+//         clients[key].sendUTF(message.utf8Data);
+//         console.log("sent Message to: ", clients[key]);
+//       }
+//     }
+//   });
+// });
