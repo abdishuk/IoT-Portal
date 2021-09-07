@@ -17,7 +17,7 @@ import Rule from "./Models/RuleSet.js";
 
 import Data from "./Models/Data.js";
 import nodemailer from "nodemailer";
-// create application/json parser
+// create application/json parsergit
 var jsonParser = bodyParser.json();
 
 // create application/x-www-form-urlencoded parser
