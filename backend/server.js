@@ -27,7 +27,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 connectDB();
 app.use(express.json()); // to post json data
 
-const PORT = 5000;
+const PORT = 5000 || process.env.PORT;
 
 // sending emails
 
