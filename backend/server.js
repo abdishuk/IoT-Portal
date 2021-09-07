@@ -8,7 +8,7 @@ import webSocketServer from "websocket";
 import Axios from "axios";
 const app = express();
 const server = http.createServer(app);
-
+import path from "path";
 import bodyParser from "body-parser";
 import axios from "axios";
 import Device from "./Models/Device.js";
@@ -30,6 +30,16 @@ app.use(express.json()); // to post json data
 const PORT = 5000;
 
 // sending emails
+
+const __dirname = path.resolve();
+if (process.env.NODE_ENV === "production") {
+  // Set static folder
+  app.use(express.static("frontend/build"));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+  });
+}
 
 app.post("/send/email/:id", (req, res) => {
   let id = req.params.id;
