@@ -4,52 +4,27 @@ import Axios from "axios";
 import Message from "./Message";
 import connectMqtt from "./mqtt";
 
-function Data({ location, match }) {
-  const id = match.params.id;
+function Data({ match }) {
+  //for updated values
+  const [initialDeviceLatitude, setinitialDeviceLatitude] = useState();
+  const [initialDeviceLongitude, setinitialDeviceLongitude] = useState();
 
-  const [cLat, setLatitude] = useState();
-  const [cLng, setLongitude] = useState();
-  const [outRange, setoutRange] = useState(false);
+  const [updateDeviceLatitude, setupdateDeviceLatitude] = useState();
+  const [updateDeviceLongitude, setupdateDeviceLongitude] = useState();
+
+  const [isOutOfRange, setIsOutOfRange] = useState(false);
+
+  //for update values
   const [minlat, setMinLat] = useState();
   const [minlang, setMinLang] = useState();
   const [maxlang, setMaxLang] = useState();
+  const [firstime, setfirstime] = useState(true);
+
   const [maxlat, setMaxLat] = useState();
 
+  const [Executed, setExecuted] = useState(false);
+
   // check data function
-
-  const checkData = async (info, firstTime) => {
-    //  get rule for the device
-
-    if (firstTime) {
-      if (
-        info.lat > maxlat ||
-        info.lat < minlat ||
-        info.lang > maxlang ||
-        info.lang < minlang
-      ) {
-        setoutRange(true);
-        clearInterval(sendData);
-
-        return true;
-      }
-    } else {
-      if (
-        parseFloat(info.location.latitude) > maxlat ||
-        parseFloat(info.location.latitude) < minlat ||
-        parseFloat(info.location.longitude) > maxlang ||
-        parseFloat(info.location.longitude) < minlang
-      ) {
-        setoutRange(true);
-        clearInterval(sendData);
-
-        return true;
-      }
-    }
-    setoutRange(false);
-    return false;
-
-    // console.log(data);
-  };
 
   function getRandomlLatitude(min, max) {
     // min = Math.ceil(min);
@@ -63,68 +38,180 @@ function Data({ location, match }) {
 
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
-  const sendData = () => {
-    setInterval(async function () {
-      console.log("clat", cLat);
-      console.log("clng", cLng);
-      const { data } = await Axios.put(`/data/${id}`, {
-        latitude: cLat,
-        longitude: cLng,
-      });
+  const sendData = async (id) => {
+    console.log("initialDeviceLatitude", initialDeviceLatitude);
+    console.log("initialDeviceLongitude", initialDeviceLongitude);
 
-      if (checkData(data, false)) {
-        setoutRange(true);
-        clearInterval(sendData);
+    const randomLatitude = getRandomlLatitude(
+      parseInt(minlat) - 1,
+      parseInt(maxlat) + 1
+    );
+    console.log("minlat type ", typeof minlat, minlat);
+    const randomLongitude = getRandomLongitude(
+      parseInt(minlang) - 1,
+      parseInt(maxlat) + 1
+    );
+
+    const { data } = await Axios.put(`/data/${id}`, {
+      latitude: randomLatitude,
+      longitude: randomLongitude,
+    });
+    console.log(data);
+    let checkDataResult;
+    setTimeout(async () => {
+      checkDataResult = await checkData(data, false);
+      console.log("checkdataResult", checkDataResult);
+      setIsOutOfRange(checkDataResult);
+      if (isOutOfRange) {
+        const { data } = await Axios.post(`/send/email/${match.params.id}`, {
+          message: `device with device id ${match.params.id} is out of range.Current latitude: ${updateDeviceLatitude}   Current Longitude: ${updateDeviceLongitude}`,
+        });
+        console.log(data);
       } else {
-        setoutRange(false);
+        setupdateDeviceLatitude(parseInt(data.location.latitude));
+        setupdateDeviceLongitude(parseInt(data.location.longitude));
+      }
+    }, 10000);
+
+    // if (checkDataResult) {
+    //   setIsOutOfRange(true);
+    //   clearInterval(sendData);
+    // } else {
+    // }
+
+    // console.log(isOutOfRange);
+  };
+
+  // second use effect
+  useEffect(() => {
+    console.log("clat", initialDeviceLatitude);
+    console.log("clang", initialDeviceLongitude);
+
+    // check whether put data is in range in the checkdata
+    sendData(match.params.id, false);
+  }, [updateDeviceLatitude, updateDeviceLongitude]);
+
+  console.log("minlatttt", minlat);
+  const startUp = async () => {
+    if (match.params.id) {
+      let id = match.params.id;
+      const res = await Axios.get(`/data/${match.params.id}`);
+      let lat = res.data.latitude;
+      let lng = res.data.longitude;
+
+      console.log("responseData", res.data);
+
+      console.log("lt", lat, "lng", lng);
+
+      // get lat and long from data collection
+
+      // get max,min Rule
+
+      const { data } = await Axios.get(`/device/${id}/rule`);
+      console.log(data);
+
+      console.log("mimin", data.minLat);
+      if (data) {
+        setMinLat(data.minLat);
+        setMinLang(data.minLang);
+        setMaxLat(data.maxLat);
+        setMaxLang(data.maxLang);
+
+        // console.log(
+        //   "useEffectminlat",
+        //   minlat,
+        //   "maxLat",
+        //   maxlat,
+        //   "maxlang",
+        //   maxlang,
+        //   "minlang",
+        //   minlang
+        // );
       }
 
-      setLatitude(
-        // getRandomlLatitude(Math.floor(minlat - 6), Math.ceil(maxlat + 6))
-        getRandomlLatitude(minlat, maxlat)
+      setinitialDeviceLatitude(parseFloat(lat));
+      setinitialDeviceLongitude(parseFloat(lng));
+
+      let checkDataResult = await checkData(
+        { lat: parseFloat(lat), lang: parseFloat(lng) },
+        true
       );
-      setLongitude(
-        // getRandomLongitude(Math.floor(minlang - 8), Math.ceil(maxlang + 8))
-        getRandomLongitude(minlang, maxlang)
-      );
 
-      // console.log(outRange);
-    }, 10000);
-  };
-  useEffect(async () => {
-    const res = await Axios.get(`/data/${match.params.id}`);
-    let lat = res.data.latitude;
-    let lng = res.data.longitude;
-    sendData();
-    console.log("lt", lat, "lng", lng);
-
-    // get lat and long from data collection
-
-    // get max,min Rule
-
-    const { data } = await Axios.get(`/device/${id}/rule`);
-    const { minLat, maxLat, minLang, maxLang } = data;
-    setMinLat(parseFloat(minLat));
-    setMinLang(parseFloat(minLang));
-    setMaxLat(parseFloat(maxLat));
-    setMaxLang(parseFloat(maxLang));
-
-    setLatitude(parseFloat(lat));
-    setLongitude(parseFloat(lng));
-    if (checkData({ lat: parseFloat(lat), lang: parseFloat(lng) }, true)) {
-      setoutRange(true);
-    } else {
-      setoutRange(true);
+      console.log("checkDataresultttt", checkDataResult);
+      setIsOutOfRange(checkDataResult);
+      // if (checkDataResult) {
+      //   setIsOutOfRange(true);
+      // } else {
+      //   setIsOutOfRange(true);
+      // }
     }
-  }, [location.search, checkData, id]);
+  };
+  const checkData = async (info) => {
+    //  get rule for the device
+    console.log("infor", info);
+    console.log(
+      "minlat",
+      minlat,
+      "maxLat",
+      maxlat,
+      "maxlang",
+      maxlang,
+      "minlang",
+      minlang
+    );
+    if (firstime) {
+      if (
+        info.lat > maxlat ||
+        info.lat < minlat ||
+        info.lang > maxlang ||
+        info.lang < minlang
+      ) {
+        return true;
+      }
 
-  if (outRange) {
-    clearInterval(sendData);
-  }
+      setfirstime(false);
+    } else {
+      if (
+        parseFloat(info.location?.latitude) > maxlat ||
+        parseFloat(info.location?.latitude) < minlat ||
+        parseFloat(info.location?.longitude) > maxlang ||
+        parseFloat(info.location?.longitude) < minlang
+      ) {
+        return true;
+      }
+      return false;
+    }
+  };
 
+  // console.log(data);
+
+  // FİRST useeffect to start
+  useEffect(() => {
+    startUp();
+  }, []);
+
+  useEffect(() => {
+    console.log(
+      "useEffectminlat",
+      minlat,
+      "maxLat",
+      maxlat,
+      "maxlang",
+      maxlang,
+      "minlang",
+      minlang
+    );
+    sendData(match.params.id);
+  }, [minlat, maxlat, maxlang, minlang]);
+  // if (isOutOfRange) {
+  //   clearInterval(sendData);
+  // }
+  // useEffect(() => {
+  //   clearInterval(sendData);
+  // }, [isOutOfRange]);
   return (
     <div>
-      {outRange ? (
+      {isOutOfRange ? (
         <Message var="danger" message="Device out of range" />
       ) : (
         <Message var="success" message="Device in allowed range" />
@@ -140,9 +227,17 @@ function Data({ location, match }) {
         </thead>
         <tbody>
           <tr>
-            <td>{id}</td>
-            <td>{cLat}</td>
-            <td>{cLng}</td>
+            <td>{match.params.id}</td>
+            <td>
+              {updateDeviceLatitude
+                ? updateDeviceLatitude
+                : initialDeviceLatitude}
+            </td>
+            <td>
+              {updateDeviceLongitude
+                ? updateDeviceLongitude
+                : initialDeviceLongitude}
+            </td>
           </tr>
         </tbody>
       </Table>

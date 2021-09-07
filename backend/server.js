@@ -16,6 +16,7 @@ import Message from "./Models/Message.js";
 import Rule from "./Models/RuleSet.js";
 
 import Data from "./Models/Data.js";
+import nodemailer from "nodemailer";
 // create application/json parser
 var jsonParser = bodyParser.json();
 
@@ -28,7 +29,51 @@ app.use(express.json()); // to post json data
 
 const PORT = 5000;
 
-// });
+// sending emails
+
+app.post("/send/email/:id", (req, res) => {
+  let id = req.params.id;
+  const output = `
+    <p>You have a new Device Alert</p>
+    <h3>Device  Alert</h3>
+    
+    <h3>Message</h3>
+    <p>${req.body.message}</p>
+  `;
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+
+    auth: {
+      user: "nuriya.yussuf2016@gmail.com", // generated ethereal user
+      pass: "nuriya2016", // generated ethereal password
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  // setup email data with unicode symbols
+  let mailOptions = {
+    from: "nuriya.yussuf2016@gmail.com", // sender address
+    to: "abdishukri.yussuf2014@gmail.com", // list of receivers
+    subject: "Device Alert", // Subject line
+    text: `This is to let you know that the device with the device id: ${id}  is out of range`, // plain text body
+    html: output, // html body
+  };
+
+  // send mail with defined transport object
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+    console.log("Message sent: %s", info.messageId);
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+    res.send({ msg: "Email has been sent" });
+  });
+});
 
 // put data
 
@@ -91,6 +136,7 @@ app.put("/device/rule/:id", async (req, res) => {
     const saveRule = await rule.save();
     console.log("Rule save");
     console.log(saveRule);
+    res.send(saveRule);
   } else {
     console.log("rule not found");
   }
@@ -219,7 +265,7 @@ app.get("/device/:id/rule", async (req, res) => {
         maxLang,
       });
     } else {
-      res.send("not found");
+      res.send({});
     }
   } catch (error) {
     console.log(error);

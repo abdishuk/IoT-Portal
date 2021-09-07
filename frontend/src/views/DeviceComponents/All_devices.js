@@ -15,17 +15,7 @@ function Alldevices({ history }) {
     const { data } = await Axios.get("/devices/all_devices");
     setDevices(data);
   };
-  useEffect(() => {
-    let client = mqtt.connect("ws://18.140.241.253:15675/ws");
-    client.on("connect", () => {
-      console.log("connected");
-      client.subscribe("telemetry");
-    });
-    client.on("message", (topic, message) => {
-      console.log(message);
-      //this.handleJsonMessage(JSON.parse(message.toString()));
-    });
-  }, []);
+  useEffect(() => {}, []);
 
   const updateDeviceList = (id) => {
     setDevices(devices.filter((device) => device._id !== id));
@@ -40,17 +30,28 @@ function Alldevices({ history }) {
   useEffect(() => {
     getDevices();
   }, []);
+
+  function isEmpty(obj) {
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) return false;
+    }
+    return true;
+  }
   const EditHandler = (id) => {
     history.push(`/devices/${id}/rule/edit`);
   };
   const RuleHandler = async (id) => {
     const { data } = await Axios.get(`/device/${id}/rule`);
-    if (data) {
-      alert(
-        "rule already exists for this device.Please use the edit button to edit the existing one"
-      );
-    } else {
+    console.log(data);
+    if (isEmpty(data)) {
       history.push(`/devices/${id}/rule`);
+
+      // Object is empty (Would return true in this example)
+    } else {
+      // Object is NOT empty
+      alert(
+        "rule already exists.Please use this the edit button to edit the existing rule"
+      );
     }
   };
 
@@ -116,7 +117,7 @@ function Alldevices({ history }) {
                         EditHandler(device._id);
                       }}
                     >
-                      Add Rule
+                      Edit Rule
                     </button>
                   </td>
                   <td>

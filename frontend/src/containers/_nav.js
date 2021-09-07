@@ -14,7 +14,7 @@ const _nav = [
   },
   {
     _tag: "CSidebarNavDropdown",
-    name: "Devices",
+    name: "Device Management",
     route: "/devices",
     icon: "cil puzzle",
     _children: [
@@ -27,19 +27,6 @@ const _nav = [
         _tag: "CSidebarNavItem",
         name: "Add a New Device",
         to: "/devices/add_new_device",
-      },
-    ],
-  },
-  {
-    _tag: "CSidebarNavDropdown",
-    name: "Telemetry Data",
-    route: "/data",
-    icon: "cil puzzle",
-    _children: [
-      {
-        _tag: "CSidebarNavItem",
-        name: "Data",
-        to: "/data/tel",
       },
     ],
   },

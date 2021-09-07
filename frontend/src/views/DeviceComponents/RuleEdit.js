@@ -28,7 +28,7 @@ function RuleEdit({ match }) {
       const device_id = match.params.id;
       console.log(device_id);
       const { data } = await axios.get(`/device/${device_id}/rule`);
-      console.log(data);
+
       //console.log("fetchedData", data);
       setID(device_id);
       setFormdata({
@@ -53,14 +53,16 @@ function RuleEdit({ match }) {
       },
     };
 
-    const { data } = await axios.put(
-      `/device/rule/${id}`,
-      { MinLat, MinLng, MaxLat, MaxLng, Action },
-      config
-    );
-    if (data) {
-      setSubmitted(true);
-    }
+    await axios
+      .put(
+        `/device/rule/${id}`,
+        { MinLat, MinLng, MaxLat, MaxLng, Action },
+        config
+      )
+      .then(() => {
+        setSubmitted(true);
+      });
+    console.log("submitted");
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React, { lazy } from "react";
 import {
   CBadge,
   CButton,
@@ -10,19 +10,19 @@ import {
   CCol,
   CProgress,
   CRow,
-  CCallout
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
+  CCallout,
+} from "@coreui/react";
+import CIcon from "@coreui/icons-react";
 
-import MainChartExample from '../charts/MainChartExample.js'
+import MainChartExample from "../charts/MainChartExample.js";
 
-const WidgetsDropdown = lazy(() => import('../widgets/WidgetsDropdown.js'))
-const WidgetsBrand = lazy(() => import('../widgets/WidgetsBrand.js'))
+const WidgetsDropdown = lazy(() => import("../widgets/WidgetsDropdown.js"));
+const WidgetsBrand = lazy(() => import("../widgets/WidgetsBrand.js"));
 
 const Dashboard = () => {
   return (
     <>
-      <WidgetsDropdown />
+      {/* <WidgetsDropdown />
       <CCard>
         <CCardBody>
           <CRow>
@@ -549,9 +549,9 @@ const Dashboard = () => {
             </CCardBody>
           </CCard>
         </CCol>
-      </CRow>
+      </CRow> */}
     </>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;
