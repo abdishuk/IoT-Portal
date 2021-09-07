@@ -51,7 +51,6 @@ function Data({ match }) {
       parseInt(minlang) - 1,
       parseInt(maxlat) + 1
     );
-
     const { data } = await Axios.put(`/data/${id}`, {
       latitude: randomLatitude,
       longitude: randomLongitude,
