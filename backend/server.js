@@ -7,7 +7,6 @@ import http from "http";
 import webSocketServer from "websocket";
 import Axios from "axios";
 const app = express();
-const server = http.createServer(app);
 import path from "path";
 import bodyParser from "body-parser";
 import axios from "axios";
@@ -451,7 +450,7 @@ app.delete(
   })
 );
 
-server.listen(PORT, console.log("server listening on port " + PORT));
+app.listen(PORT, console.log("server listening on port " + PORT));
 const wsServer = new webSocketServer.server({
   httpServer: server,
 });
