@@ -27,6 +27,7 @@ connectDB();
 app.use(express.json()); // to post json data
 
 const PORT = 5000 || process.env.PORT;
+const host = "0.0.0.0";
 
 // sending emails
 
@@ -450,7 +451,9 @@ app.delete(
   })
 );
 
-app.listen(PORT, "0.0.0.0");
+app.listen(PORT, host, function () {
+  console.log("server started.....");
+});
 
 // This code generates unique userid for everyuser.
 const getUniqueID = () => {
