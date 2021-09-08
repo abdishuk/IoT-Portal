@@ -451,10 +451,6 @@ app.delete(
 );
 
 app.listen(PORT, console.log("server listening on port " + PORT));
-const wsServer = new webSocketServer.server({
-  httpServer: server,
-});
-const clients = {};
 
 // This code generates unique userid for everyuser.
 const getUniqueID = () => {

@@ -1,1 +1,0 @@
-{"version":3,"sources":["webpack://src/views/DeviceComponents/Add_new.css"],"names":[],"mappings":"AAAA,KACE,YAAa,CACb,6BACF","file":"9.bd780f79.chunk.css","sourcesContent":[".top {\r\n  display: flex;\r\n  justify-content: space-between;\r\n}\r\n"]}
