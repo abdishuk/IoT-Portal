@@ -450,7 +450,7 @@ app.delete(
   })
 );
 
-app.listen(PORT, console.log("server listening on port " + PORT));
+app.listen(PORT, "0.0.0.0");
 
 // This code generates unique userid for everyuser.
 const getUniqueID = () => {
